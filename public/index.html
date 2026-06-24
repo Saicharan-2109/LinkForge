@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkForge — Forge Short Links</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="index.html" class="nav-brand"><span>LF</span> LinkForge</a>
+    <div class="nav-links" id="nav-links">
+      <!-- JS fills this based on auth state -->
+    </div>
+  </nav>
+
+  <!-- HERO + FORGE BAR -->
+  <section class="hero">
+    <h1>SHORTEN.<br><em>TRACK.</em> OWN IT.</h1>
+    <p>Paste a URL. Get a short link. See who clicks.</p>
+
+    <div class="forge-bar">
+      <input type="url" id="long-url" placeholder="https://paste-your-long-url-here.com">
+      <button onclick="forgeLink()">FORGE →</button>
+    </div>
+
+    <div class="alias-row">
+      <button class="alias-toggle" onclick="toggleAlias()">+ Custom alias (optional)</button>
+      <input type="text" id="custom-alias" class="alias-input" placeholder="my-custom-name">
+    </div>
+
+    <div class="result" id="result">
+      <div class="result-label">Your forged link</div>
+      <div class="result-row">
+        <span class="result-url" id="result-url"></span>
+        <button class="btn-copy" onclick="copyLink()">COPY</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="toast-box" id="toasts"></div>
+  <script src="app.js"></script>
+</body>
+</html>

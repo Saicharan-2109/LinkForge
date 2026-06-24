@@ -1,0 +1,211 @@
+/* ═══════════════════════════════════════════════════════
+   LINKFORGE AUTH PAGES
+   Clean split-screen layout
+   ═══════════════════════════════════════════════════════ */
+
+.auth-body {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* ── SPLIT LAYOUT ── */
+.auth-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+/* ── LEFT: BRANDING ── */
+.auth-visual {
+  background: linear-gradient(165deg, #1a0a0a 0%, #0a0a0b 50%, #0d0811 100%);
+  padding: 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.auth-visual__brand {
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.auth-visual__brand span {
+  background: var(--red);
+  color: var(--white);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.auth-visual__content {
+  padding-bottom: 4rem;
+}
+.auth-visual__content h2 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 3.5rem;
+  line-height: 1.05;
+  color: var(--white);
+  letter-spacing: -0.02em;
+}
+.auth-visual__content h2 em {
+  font-style: normal;
+  color: var(--red);
+}
+.auth-visual__content p {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--gray);
+  line-height: 1.6;
+  max-width: 320px;
+}
+
+/* ── STATS ROW ── */
+.auth-visual__stats {
+  display: flex;
+  gap: 2.5rem;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.stat__number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--cream);
+}
+.stat__label {
+  font-size: 0.65rem;
+  color: var(--gray);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ── RIGHT: FORM ── */
+.auth-form-panel {
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-form-panel__inner {
+  width: 100%;
+  max-width: 360px;
+}
+
+.auth-form-panel__inner h1 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--white);
+  margin-bottom: 0.3rem;
+}
+
+.auth-subtitle {
+  font-size: 0.8rem;
+  color: var(--gray);
+  margin-bottom: 2rem;
+}
+
+/* ── FORM FIELDS ── */
+.auth-field {
+  margin-bottom: 1.1rem;
+}
+.auth-field label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--cream-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+  font-weight: 500;
+}
+.auth-field input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--cream);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.auth-field input::placeholder { color: var(--gray); }
+.auth-field input:focus { border-color: var(--red); }
+
+/* ── BUTTON ── */
+.auth-btn {
+  width: 100%;
+  padding: 0.85rem;
+  background: var(--red);
+  border: none;
+  color: var(--white);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.2s;
+}
+.auth-btn:hover { background: var(--red-glow); }
+
+/* ── FOOTER LINK ── */
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--gray);
+}
+.auth-footer a {
+  color: var(--red-glow);
+  text-decoration: none;
+  font-weight: 600;
+}
+.auth-footer a:hover { color: var(--white); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+  .auth-visual {
+    padding: 1.5rem;
+  }
+  .auth-visual__content {
+    padding-bottom: 1.5rem;
+  }
+  .auth-visual__content h2 {
+    font-size: 2rem;
+  }
+  .auth-visual__content p {
+    display: none;
+  }
+  .auth-body {
+    overflow: auto;
+    height: auto;
+  }
+  .auth-visual__stats {
+    display: none;
+  }
+  .auth-form-panel {
+    padding: 2rem 1.5rem;
+    align-items: flex-start;
+  }
+}

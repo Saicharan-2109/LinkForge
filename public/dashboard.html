@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkForge — Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="index.html" class="nav-brand"><span>LF</span> LinkForge</a>
+    <div class="nav-links">
+      <a href="index.html">Forge</a>
+      <a href="analytics.html">Analytics</a>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="dash-header">
+    <div>
+      <h2>My Links</h2>
+      <span class="count" id="link-count"></span>
+    </div>
+  </div>
+
+  <!-- QUICK CREATE -->
+  <div class="create-bar">
+    <input type="url" id="dash-url" placeholder="Paste a URL to forge...">
+    <button onclick="dashForge()">FORGE</button>
+  </div>
+
+  <!-- LINKS TABLE -->
+  <div class="links-table">
+    <div class="link-row header">
+      <span>Short Link</span>
+      <span>Original</span>
+      <span>Clicks</span>
+      <span>Created</span>
+      <span></span>
+    </div>
+    <div id="links-body">
+      <!-- JS fills this -->
+    </div>
+  </div>
+
+  <div class="toast-box" id="toasts"></div>
+  <script src="app.js"></script>
+  <script>
+    // Kick out if no wristband
+    if (!localStorage.getItem('lf_token')) {
+      window.location.href = 'index.html';
+    }
+    loadDashboard();
+  </script>
+</body>
+</html>

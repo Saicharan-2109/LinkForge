@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkForge — Analytics</title>
+  <meta name="description" content="Deep analytics for your forged links — clicks, devices, browsers, countries, and more.">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ═══════════════════════════════════════════
+       ANALYTICS PAGE STYLES
+       Same bold dark/red system as the rest
+       ═══════════════════════════════════════════ */
+
+    .analytics-header {
+      padding: 2.5rem 2.5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .analytics-header h2 {
+      font-weight: 900;
+      font-size: 2rem;
+      letter-spacing: -0.02em;
+      color: var(--white);
+    }
+    .analytics-header h2 em {
+      font-style: normal;
+      color: var(--red);
+    }
+    .analytics-header .sub {
+      font-size: 0.75rem;
+      color: var(--gray);
+      letter-spacing: 0.08em;
+      margin-top: 0.3rem;
+    }
+
+    /* ── TIME RANGE PICKER ── */
+    .range-pills {
+      display: flex;
+      gap: 0;
+    }
+    .range-pill {
+      padding: 0.5rem 1.2rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .range-pill:first-child { border-right: none; }
+    .range-pill:last-child { border-left: none; }
+    .range-pill.active {
+      background: var(--red);
+      color: var(--white);
+      border-color: var(--red);
+    }
+    .range-pill:hover:not(.active) {
+      color: var(--cream);
+    }
+
+    /* ── STAT CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      margin: 1.5rem 2.5rem 0;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .stat-card {
+      background: var(--surface);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .stat-card__label {
+      font-size: 0.6rem;
+      color: var(--gray);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .stat-card__value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1;
+    }
+    .stat-card__sub {
+      font-size: 0.7rem;
+      color: var(--gray);
+      margin-top: 0.2rem;
+    }
+    .stat-card__value--red { color: var(--red-glow); }
+
+    /* ── CHART SECTIONS ── */
+    .charts-container {
+      padding: 1.5rem 2.5rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .chart-row {
+      display: grid;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .chart-row--full { grid-template-columns: 1fr; }
+    .chart-row--half { grid-template-columns: 1fr 1fr; }
+    .chart-row--third { grid-template-columns: 1fr 1fr 1fr; }
+
+    .chart-panel {
+      background: var(--surface);
+      padding: 1.5rem;
+    }
+    .chart-panel__title {
+      font-size: 0.65rem;
+      color: var(--gray);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+    }
+    .chart-panel canvas {
+      width: 100% !important;
+      display: block;
+    }
+
+    /* ── DONUT LEGEND ── */
+    .donut-wrap {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    .donut-canvas-wrap {
+      flex-shrink: 0;
+    }
+    .donut-legend {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      flex: 1;
+    }
+    .donut-legend li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      color: var(--cream-dim);
+    }
+    .donut-legend__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .donut-legend__val {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--cream);
+      font-weight: 500;
+    }
+
+    /* ── DATA TABLE ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .data-table th {
+      text-align: left;
+      font-size: 0.6rem;
+      color: var(--gray);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 600;
+      padding: 0 0 0.8rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 0.65rem 0;
+      font-size: 0.8rem;
+      color: var(--cream-dim);
+      border-bottom: 1px solid rgba(30,30,34,0.5);
+    }
+    .data-table td:last-child {
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--cream);
+      font-weight: 500;
+    }
+    .data-table .bar-cell {
+      position: relative;
+      padding-right: 1rem;
+    }
+    .data-table .bar-bg {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 20px;
+      background: rgba(198,40,40,0.1);
+      border-right: 2px solid var(--red);
+      pointer-events: none;
+    }
+    .rank {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--gray);
+      width: 24px;
+      display: inline-block;
+    }
+
+    /* ── EMPTY STATE ── */
+    .analytics-empty {
+      text-align: center;
+      padding: 6rem 2rem;
+      color: var(--gray);
+    }
+    .analytics-empty h3 {
+      font-size: 1.3rem;
+      color: var(--cream-dim);
+      margin-bottom: 0.5rem;
+    }
+    .analytics-empty p {
+      font-size: 0.85rem;
+    }
+    .analytics-empty .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    /* ── LOADING STATE ── */
+    .analytics-loading {
+      text-align: center;
+      padding: 6rem 2rem;
+      color: var(--gray);
+      font-size: 0.85rem;
+    }
+    .loader {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top: 3px solid var(--red);
+      border-radius: 50%;
+      margin: 0 auto 1rem;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .chart-row--third { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .analytics-header { padding: 1.5rem 1rem 0.5rem; }
+      .stats-grid { margin: 1rem; }
+      .charts-container { padding: 1rem 1rem 2rem; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .chart-row--half { grid-template-columns: 1fr; }
+      .donut-wrap { flex-direction: column; align-items: flex-start; }
+      .range-pills { flex-wrap: wrap; }
+    }
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="index.html" class="nav-brand"><span>LF</span> LinkForge</a>
+    <div class="nav-links">
+      <a href="index.html">Forge</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="analytics.html" style="color: var(--red-glow);">Analytics</a>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- HEADER -->
+  <div class="analytics-header">
+    <div>
+      <h2>LINK <em>ANALYTICS</em></h2>
+      <div class="sub" id="analytics-sub">Loading your click data...</div>
+    </div>
+    <div class="range-pills">
+      <button class="range-pill active" onclick="setRange(7, this)">7D</button>
+      <button class="range-pill" onclick="setRange(30, this)">30D</button>
+      <button class="range-pill" onclick="setRange(0, this)">ALL</button>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div id="analytics-loading" class="analytics-loading">
+    <div class="loader"></div>
+    Crunching your data...
+  </div>
+
+  <!-- EMPTY STATE (hidden by default) -->
+  <div id="analytics-empty" class="analytics-empty hidden">
+    <div class="empty-icon">📊</div>
+    <h3>No clicks yet</h3>
+    <p>Share your forged links and come back to see who's clicking!</p>
+  </div>
+
+  <!-- MAIN CONTENT (hidden until loaded) -->
+  <div id="analytics-content" class="hidden">
+
+    <!-- STAT CARDS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-card__label">Total Clicks</span>
+        <span class="stat-card__value" id="stat-total">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Unique Visitors</span>
+        <span class="stat-card__value" id="stat-unique">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Top Country</span>
+        <span class="stat-card__value stat-card__value--red" id="stat-country">—</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Top Browser</span>
+        <span class="stat-card__value" id="stat-browser">—</span>
+      </div>
+    </div>
+
+    <div class="charts-container">
+      <!-- CLICKS OVER TIME -->
+      <div class="chart-row chart-row--full">
+        <div class="chart-panel">
+          <div class="chart-panel__title">Clicks Over Time</div>
+          <canvas id="chart-timeline" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- DEVICES + BROWSERS -->
+      <div class="chart-row chart-row--half" style="margin-top: 1px;">
+        <div class="chart-panel">
+          <div class="chart-panel__title">Devices</div>
+          <div class="donut-wrap">
+            <div class="donut-canvas-wrap">
+              <canvas id="chart-devices" width="140" height="140"></canvas>
+            </div>
+            <ul class="donut-legend" id="legend-devices"></ul>
+          </div>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-panel__title">Browsers</div>
+          <div class="donut-wrap">
+            <div class="donut-canvas-wrap">
+              <canvas id="chart-browsers" width="140" height="140"></canvas>
+            </div>
+            <ul class="donut-legend" id="legend-browsers"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- OS + REFERRERS -->
+      <div class="chart-row chart-row--half" style="margin-top: 1px;">
+        <div class="chart-panel">
+          <div class="chart-panel__title">Operating Systems</div>
+          <div class="donut-wrap">
+            <div class="donut-canvas-wrap">
+              <canvas id="chart-os" width="140" height="140"></canvas>
+            </div>
+            <ul class="donut-legend" id="legend-os"></ul>
+          </div>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-panel__title">Referrers</div>
+          <table class="data-table" id="table-referrers">
+            <thead><tr><th>Source</th><th>Clicks</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- COUNTRIES -->
+      <div class="chart-row chart-row--full" style="margin-top: 1px;">
+        <div class="chart-panel">
+          <div class="chart-panel__title">Top Countries</div>
+          <table class="data-table" id="table-countries">
+            <thead><tr><th>#</th><th>Country</th><th>Clicks</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast-box" id="toasts"></div>
+  <script src="app.js"></script>
+  <script>
+    // Kick out if no wristband
+    if (!localStorage.getItem('lf_token')) {
+      window.location.href = 'index.html';
+    }
+    loadAnalytics();
+  </script>
+</body>
+</html>
