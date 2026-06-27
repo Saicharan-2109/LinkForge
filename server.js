@@ -3,6 +3,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const Redis = require('ioredis');
+const { RedisStore } = require('rate-limit-redis');
+
 
 
 const app = express();
@@ -11,13 +14,23 @@ const app = express();
 // MIDDLEWARE (The Bouncers)
 // ==========================================
 app.use(express.json());
+// Connect the Walkie-Talkie to Upstash
+const redisClient = new Redis(process.env.REDIS_URL);
+
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // Limit each IP to 100 requests per window
+    
+    // THIS IS THE MAGIC LINE: Give the bouncer the Redis Walkie-Talkie
+    store: new RedisStore({
+        sendCommand: (...args) => redisClient.call(...args),
+    }),
+    
     handler: (req, res) => {
         res.status(429).json('Take a breath! Too many requests. Try again in 15 minutes.');
     }
 });
+
 
 // Apply the shield to ALL API routes
 app.use('/api', apiLimiter);

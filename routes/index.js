@@ -6,41 +6,69 @@ const Url = require('../models/Url');
 const ClickEvent = require('../models/ClickEvent');
 const parseClick = require('../utils/parseClick');
 
+// Bring in Redis for blazing fast caching
+const Redis = require('ioredis');
+const redis = new Redis(process.env.REDIS_URL);
+
+// Bring in the Secretary Inbox
+const analyticsQueue = require('../workers/analyticsWorker');
+
 // @route   GET /:code
 // @desc    Redirect to the long/original URL
 router.get('/:code', async (req, res) => {
     try {
-        // 1. Ask the database (MongoDB) to find the short link
-        const url = await Url.findOne({ urlCode: req.params.code });
+        const shortCode = req.params.code;
 
-        if (url) {
-            // 2. Add a click to the basic counter
-            url.clicks++;
-            await url.save();
+        // 1. CACHE CHECK: Ask Redis. It will return a JSON string if it finds it.
+        const cachedDataString = await redis.get(shortCode);
+        
+        let longUrl;
+        let mongoId;
 
-            // 3. THE DEEP DIVE: Extract User Data
-            const clickData = parseClick(req);
+        // 2. CACHE HIT:
+        if (cachedDataString) {
+            console.log(`⚡ CACHE HIT: Found ${shortCode} in Redis!`);
+            // Unpack the JSON string back into a usable object
+            const cachedData = JSON.parse(cachedDataString); 
+            longUrl = cachedData.longUrl;
+            mongoId = cachedData.id;
+        } 
+        // 3. CACHE MISS: 
+        else {
+            console.log(`🐌 CACHE MISS: Searching MongoDB for ${shortCode}...`);
+            const url = await Url.findOne({ urlCode: shortCode });
+            
+            if (!url) {
+                return res.status(404).json('No URL found');
+            }
 
-            // 4. Save the neatly packaged data to MongoDB
-            await ClickEvent.create({
-                urlId: url._id,
-                urlCode: url.urlCode,
-                country: clickData.country,
-                city: clickData.city,
-                device: clickData.device,
-                browser: clickData.browser,
-                os: clickData.os,
-                referrer: clickData.referrer,
-                ipHash: clickData.ipHash
-            });
+            longUrl = url.longUrl;
+            mongoId = url._id;
 
-            // 5. Redirect them to the long link!
-            return res.redirect(url.longUrl);
-        } else {
-            return res.status(404).json('No URL found');
+            // Pack the URL and ID into a JSON string and put it on the whiteboard
+            const dataToCache = JSON.stringify({ longUrl: longUrl, id: mongoId });
+            await redis.set(shortCode, dataToCache, 'EX', 86400); // Expires in 24 hours
         }
+
+        // 4. Redirect instantly!
+        res.redirect(longUrl);
+
+        // 5. Drop a sticky note in the Inbox! The Secretary handles the rest.
+        const clickData = parseClick(req);
+        analyticsQueue.add('new-click', {
+            urlId: mongoId,
+            urlCode: shortCode,
+            country: clickData.country,
+            city: clickData.city,
+            device: clickData.device,
+            browser: clickData.browser,
+            os: clickData.os,
+            referrer: clickData.referrer,
+            ipHash: clickData.ipHash
+        });
+
     } catch (err) {
-        console.error(err);
+        console.error("Redirect Error:", err);
         res.status(500).json('Server error');
     }
 });
