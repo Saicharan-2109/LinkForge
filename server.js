@@ -64,8 +64,8 @@ app.get('/', (req, res) => {
     res.send('The Forge is hot and running! 🔥');
 });
 app.use('/api/url', require('./routes/url'));
-app.use('/', require('./routes/index'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/', require('./routes/index'));  // catch-all /:code must be LAST
 
 // ==========================================
 // START SERVER
