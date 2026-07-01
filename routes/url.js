@@ -12,7 +12,7 @@ const ClickEvent = require('../models/ClickEvent');
 router.post('/shorten',verifyToken ,async (req, res) => {
     // We now accept a longUrl AND an optional customAlias!
     const { longUrl, customAlias } = req.body;
-    const baseUrl = 'http://localhost:5000'; 
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000'; 
 
     // 1. Bouncer Check: Is the URL actually real?
     if (!validUrl.isUri(longUrl)) {
