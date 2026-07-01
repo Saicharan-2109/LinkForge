@@ -40,7 +40,7 @@ async function handleRegister(e) {
       body: JSON.stringify({ name, email, password })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data);
+    if (!res.ok) throw new Error(typeof data === 'string' ? data : (data.msg || data.message || JSON.stringify(data)));
     localStorage.setItem('lf_token', data.wristband);
     toast('Account created!');
     const authSec = document.getElementById('auth-section');
@@ -60,7 +60,7 @@ async function handleLogin(e) {
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data);
+    if (!res.ok) throw new Error(typeof data === 'string' ? data : (data.msg || data.message || JSON.stringify(data)));
     localStorage.setItem('lf_token', data.wristband);
     toast('Welcome back!');
     const authSec = document.getElementById('auth-section');
@@ -119,7 +119,7 @@ async function forgeLink() {
       body: JSON.stringify(body)
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data);
+    if (!res.ok) throw new Error(typeof data === 'string' ? data : (data.msg || data.message || JSON.stringify(data)));
 
     // Show result
     document.getElementById('result-url').textContent = data.shortUrl;
@@ -148,7 +148,7 @@ async function loadDashboard() {
       headers: { 'x-auth-token': getToken() }
     });
     const links = await res.json();
-    if (!res.ok) throw new Error(links);
+    if (!res.ok) throw new Error(typeof links === 'string' ? links : (links.msg || links.message || JSON.stringify(links)));
 
     const countEl = document.getElementById('link-count');
     if (countEl) countEl.textContent = `${links.length} link${links.length !== 1 ? 's' : ''} forged`;
@@ -190,7 +190,7 @@ async function dashForge() {
       body: JSON.stringify({ longUrl })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data);
+    if (!res.ok) throw new Error(typeof data === 'string' ? data : (data.msg || data.message || JSON.stringify(data)));
     input.value = '';
     toast('Link forged!');
     loadDashboard(); // Refresh the table
@@ -226,7 +226,7 @@ async function loadAnalytics() {
       headers: { 'x-auth-token': getToken() }
     });
     const clicks = await res.json();
-    if (!res.ok) throw new Error(clicks);
+    if (!res.ok) throw new Error(typeof clicks === 'string' ? clicks : (clicks.msg || clicks.message || JSON.stringify(clicks)));
 
     allClickData = clicks;
 

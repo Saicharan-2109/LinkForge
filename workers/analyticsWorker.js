@@ -1,15 +1,23 @@
 const { Queue, Worker } = require('bullmq');
-const Redis = require('ioredis');
+const IORedis = require('ioredis');
 const ClickEvent = require('../models/ClickEvent');
 const Url = require('../models/Url');
 
-// Connect to Upstash Redis
-const connection = new Redis(process.env.REDIS_URL);
+// BullMQ requires maxRetriesPerRequest: null for blocking commands
+const connection = new IORedis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false
+});
 
 // 1. Create the Inbox (The Queue)
 const analyticsQueue = new Queue('AnalyticsQueue', { connection });
 
-// 2. Hire the Secretary (The Worker)
+// 2. Hire the Secretary (The Worker) — Worker needs its OWN connection (BullMQ requirement)
+const workerConnection = new IORedis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false
+});
+
 const worker = new Worker('AnalyticsQueue', async (job) => {
     console.log(`📝 Secretary processing click for: ${job.data.urlCode}`);
     
@@ -17,6 +25,6 @@ const worker = new Worker('AnalyticsQueue', async (job) => {
     await ClickEvent.create(job.data);
     await Url.findOneAndUpdate({ urlCode: job.data.urlCode }, { $inc: { clicks: 1 } });
     
-}, { connection });
+}, { connection: workerConnection });
 
 module.exports = analyticsQueue;
