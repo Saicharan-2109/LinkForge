@@ -55,22 +55,30 @@ const connectDB = async () => {
 };
 
 // Fire the engine!
+if (process.env.NODE_ENV !== 'test') {
 connectDB();
+}
 
 // ==========================================
 // ROUTES
 // ==========================================
-app.get('/', (req, res) => {
+app.get('/api/health', (req, res) => {
     res.send('The Forge is hot and running! 🔥');
 });
 app.use('/api/url', require('./routes/url'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/', require('./routes/index'));  // catch-all /:code must be LAST
-
 // ==========================================
-// START SERVER
+// START SERVER (Only if NOT testing)
 // ==========================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-});
+
+// We only listen on the port if we are NOT running tests
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+    });
+}
+
+// We MUST export the app so Supertest can use it in our test files!
+module.exports = app;
