@@ -7,6 +7,8 @@ const Url = require('../models/Url');
 const generateCode = require('../utils/generateCode');
 const ClickEvent = require('../models/ClickEvent'); 
 
+const CUSTOM_ALIAS_PATTERN = /^[A-Za-z0-9_-]{3,64}$/;
+
 // @route   POST /api/url/shorten
 // @desc    Create short URL (The Forge)
 router.post('/shorten',verifyToken ,async (req, res) => {
@@ -24,6 +26,10 @@ router.post('/shorten',verifyToken ,async (req, res) => {
 
         // 2. The "Dibs" Rule (Custom Alias)
         if (customAlias) {
+            if (typeof customAlias !== 'string' || !CUSTOM_ALIAS_PATTERN.test(customAlias)) {
+                return res.status(400).json('Custom alias must be 3-64 characters using only letters, numbers, hyphens, or underscores.');
+            }
+
             // Check if someone already called dibs on this exact word
             const aliasExists = await Url.findOne({ urlCode: customAlias });
             if (aliasExists) {

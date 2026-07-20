@@ -48,7 +48,7 @@ describe("URL Shortening API", () => {
     it("should successfully shorten a URL if the user is logged in", async () => {
         const response = await request(app)
             .post('/api/url/shorten')
-            .set('auth-token', token) // Attach the wristband to the headers!
+            .set('x-auth-token', token) // Attach the wristband to the headers!
             .send({ longUrl: "https://www.google.com" });
 
         expect(response.statusCode).toBe(200);

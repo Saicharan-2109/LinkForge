@@ -157,21 +157,47 @@ async function loadDashboard() {
     if (!body) return;
 
     if (links.length === 0) {
-      body.innerHTML = '<div class="empty-state">No links yet. Go forge your first one!</div>';
+      const emptyState = document.createElement('div');
+      emptyState.className = 'empty-state';
+      emptyState.textContent = 'No links yet. Go forge your first one!';
+      body.replaceChildren(emptyState);
       return;
     }
 
-    body.innerHTML = links.map(link => `
-      <div class="link-row">
-        <span class="link-short">${link.shortUrl}</span>
-        <span class="link-long" title="${link.longUrl}">${link.longUrl}</span>
-        <span class="link-clicks">${link.clicks}</span>
-        <span class="link-date">${new Date(link.createdAt).toLocaleDateString()}</span>
-        <span class="link-actions">
-          <button class="btn-sm" onclick="copyText('${link.shortUrl}')">📋</button>
-        </span>
-      </div>
-    `).join('');
+    const rows = links.map(link => {
+      const row = document.createElement('div');
+      row.className = 'link-row';
+
+      const shortUrl = document.createElement('span');
+      shortUrl.className = 'link-short';
+      shortUrl.textContent = link.shortUrl;
+
+      const longUrl = document.createElement('span');
+      longUrl.className = 'link-long';
+      longUrl.title = link.longUrl;
+      longUrl.textContent = link.longUrl;
+
+      const clicks = document.createElement('span');
+      clicks.className = 'link-clicks';
+      clicks.textContent = String(link.clicks || 0);
+
+      const createdAt = document.createElement('span');
+      createdAt.className = 'link-date';
+      createdAt.textContent = new Date(link.createdAt).toLocaleDateString();
+
+      const actions = document.createElement('span');
+      actions.className = 'link-actions';
+      const copyButton = document.createElement('button');
+      copyButton.type = 'button';
+      copyButton.className = 'btn-sm';
+      copyButton.textContent = 'Copy';
+      copyButton.addEventListener('click', () => copyText(link.shortUrl));
+      actions.appendChild(copyButton);
+
+      row.append(shortUrl, longUrl, clicks, createdAt, actions);
+      return row;
+    });
+    body.replaceChildren(...rows);
   } catch (err) { toast(err.message, 'err'); }
 }
 

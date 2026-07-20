@@ -14,17 +14,31 @@ const app = express();
 // MIDDLEWARE (The Bouncers)
 // ==========================================
 app.use(express.json());
-// Connect the Walkie-Talkie to Upstash
-const redisClient = new Redis(process.env.REDIS_URL);
+// Redis improves shared rate limiting but must not make the API unavailable.
+const redisClient = process.env.NODE_ENV !== 'test' && process.env.REDIS_URL
+    ? new Redis(process.env.REDIS_URL, {
+        connectTimeout: 1000,
+        enableOfflineQueue: false,
+        maxRetriesPerRequest: 1,
+        retryStrategy: () => null
+    })
+    : null;
+
+if (redisClient) {
+    redisClient.on('error', (err) => {
+        console.error('Redis rate-limit store unavailable:', err.message);
+    });
+}
 
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // Limit each IP to 100 requests per window
+    passOnStoreError: true,
     
     // THIS IS THE MAGIC LINE: Give the bouncer the Redis Walkie-Talkie
-    store: new RedisStore({
+    store: redisClient ? new RedisStore({
         sendCommand: (...args) => redisClient.call(...args),
-    }),
+    }) : undefined,
     
     handler: (req, res) => {
         res.status(429).json('Take a breath! Too many requests. Try again in 15 minutes.');
