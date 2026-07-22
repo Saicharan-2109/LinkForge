@@ -5,6 +5,8 @@ const router = express.Router();
 const Url = require('../models/Url');
 const ClickEvent = require('../models/ClickEvent');
 const parseClick = require('../utils/parseClick');
+// Bring in the Secretary Inbox
+const analyticsQueue = require('../workers/analyticsWorker');
 
 // Bring in Redis for blazing fast caching
 const Redis = require('ioredis');
@@ -23,8 +25,6 @@ if (redis) {
     });
 }
 
-// Bring in the Secretary Inbox
-const analyticsQueue = require('../workers/analyticsWorker');
 
 // @route   GET /:code
 // @desc    Redirect to the long/original URL

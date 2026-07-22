@@ -104,11 +104,11 @@ async function forgeLink() {
   if (!getToken()) return toast('Login first to forge links!', 'err');
 
   const aliasInput = document.getElementById('custom-alias');
-  const customAlias = aliasInput && aliasInput.value.trim() ? aliasInput.value.trim() : undefined;
+
 
   try {
     const body = { longUrl };
-    if (customAlias) body.customAlias = customAlias;
+
 
     const res = await fetch(`${API}/api/url/shorten`, {
       method: 'POST',
@@ -187,12 +187,23 @@ async function loadDashboard() {
 
       const actions = document.createElement('span');
       actions.className = 'link-actions';
+
       const copyButton = document.createElement('button');
       copyButton.type = 'button';
       copyButton.className = 'btn-sm';
       copyButton.textContent = 'Copy';
       copyButton.addEventListener('click', () => copyText(link.shortUrl));
+
+      const statsButton = document.createElement('button');
+      statsButton.type = 'button';
+      statsButton.className = 'btn-sm btn-stats';
+      statsButton.textContent = '📊 View Stats';
+      statsButton.addEventListener('click', () => {
+        window.location.href = 'analytics.html?code=' + encodeURIComponent(link.urlCode);
+      });
+
       actions.appendChild(copyButton);
+      actions.appendChild(statsButton);
 
       row.append(shortUrl, longUrl, clicks, createdAt, actions);
       return row;
@@ -238,6 +249,7 @@ updateNav();
 
 let allClickData = []; // Raw click events from API
 let currentRange = 7;  // Default 7 days
+let activeUrlCode = null; // Currently viewed link code (null = all links)
 
 function setRange(days, btn) {
   currentRange = days;
@@ -246,7 +258,15 @@ function setRange(days, btn) {
   if (allClickData.length > 0) renderAnalytics(allClickData);
 }
 
+// Load analytics — checks for ?code= query param to load per-link stats
 async function loadAnalytics() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (code) {
+    return loadSpecificAnalytics(code);
+  }
+
+  // Default: load ALL analytics (original behavior)
   try {
     const res = await fetch(`${API}/api/url/analytics`, {
       headers: { 'x-auth-token': getToken() }
@@ -254,9 +274,10 @@ async function loadAnalytics() {
     const clicks = await res.json();
     if (!res.ok) throw new Error(typeof clicks === 'string' ? clicks : (clicks.msg || clicks.message || JSON.stringify(clicks)));
 
+    activeUrlCode = null;
     allClickData = clicks;
+    updateAnalyticsHeader();
 
-    // Hide loading
     const loadingEl = document.getElementById('analytics-loading');
     if (loadingEl) loadingEl.classList.add('hidden');
 
@@ -272,6 +293,77 @@ async function loadAnalytics() {
     const loadingEl = document.getElementById('analytics-loading');
     if (loadingEl) loadingEl.classList.add('hidden');
     toast(err.message, 'err');
+  }
+}
+
+// NEW: Load analytics for ONE specific link using GET /api/url/analytics/:urlCode
+async function loadSpecificAnalytics(urlCode) {
+  const loadingEl = document.getElementById('analytics-loading');
+  const contentEl = document.getElementById('analytics-content');
+  const emptyEl = document.getElementById('analytics-empty');
+
+  // Reset to loading state
+  if (loadingEl) loadingEl.classList.remove('hidden');
+  if (contentEl) contentEl.classList.add('hidden');
+  if (emptyEl) emptyEl.classList.add('hidden');
+
+  try {
+    const res = await fetch(`${API}/api/url/analytics/${encodeURIComponent(urlCode)}`, {
+      headers: { 'x-auth-token': getToken() }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(typeof data === 'string' ? data : (data.msg || data.message || JSON.stringify(data)));
+
+    // Backend returns { url, clicks }
+    const clicks = data.clicks || [];
+    activeUrlCode = urlCode;
+    allClickData = clicks;
+    updateAnalyticsHeader();
+
+    if (loadingEl) loadingEl.classList.add('hidden');
+
+    if (clicks.length === 0) {
+      if (emptyEl) {
+        emptyEl.classList.remove('hidden');
+        emptyEl.querySelector('h3').textContent = 'No clicks yet for /' + urlCode;
+        emptyEl.querySelector('p').textContent = 'Share this link and come back to see who\'s clicking!';
+      }
+      document.getElementById('analytics-sub').textContent = 'No click data for /' + urlCode;
+      return;
+    }
+
+    if (contentEl) contentEl.classList.remove('hidden');
+    renderAnalytics(clicks);
+  } catch (err) {
+    if (loadingEl) loadingEl.classList.add('hidden');
+    toast(err.message, 'err');
+  }
+}
+
+// Go back to ALL links analytics view
+function resetAnalytics() {
+  activeUrlCode = null;
+  window.history.replaceState({}, '', 'analytics.html');
+  const loadingEl = document.getElementById('analytics-loading');
+  const contentEl = document.getElementById('analytics-content');
+  const emptyEl = document.getElementById('analytics-empty');
+  if (loadingEl) loadingEl.classList.remove('hidden');
+  if (contentEl) contentEl.classList.add('hidden');
+  if (emptyEl) emptyEl.classList.add('hidden');
+  loadAnalytics();
+}
+
+// Update the analytics page title based on whether we're viewing a specific link
+function updateAnalyticsHeader() {
+  const titleEl = document.querySelector('.analytics-header h2');
+  const resetBtn = document.getElementById('analytics-reset');
+  if (activeUrlCode && titleEl) {
+    titleEl.innerHTML = 'Analytics for <em>/' + activeUrlCode + '</em>';
+  } else if (titleEl) {
+    titleEl.innerHTML = 'LINK <em>ANALYTICS</em>';
+  }
+  if (resetBtn) {
+    resetBtn.classList.toggle('hidden', !activeUrlCode);
   }
 }
 

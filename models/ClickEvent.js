@@ -19,13 +19,27 @@ const clickEventSchema = new mongoose.Schema({
     },
 
     // 3. WHERE are they from?
-    country: { type: String, default: 'Unknown' },
-    city: { type: String, default: 'Unknown' },
+    country: { 
+        type: String,
+        default: 'Unknown' 
+    },
+    city: { 
+        type: String,
+        default: 'Unknown' },
 
     // 4. WHAT are they using?
-    device: { type: String, default: 'Unknown' },
-    browser: { type: String, default: 'Unknown' },
-    os: { type: String, default: 'Unknown' },
+    device: { 
+        type: String,
+        default: 'Unknown' 
+    },
+    browser: { 
+        type: String,
+        default: 'Unknown' 
+    },
+    os: { 
+        type: String,
+        default: 'Unknown' 
+    },
 
     // 5. HOW did they get here?
     referrer: { type: String, default: 'Direct' },

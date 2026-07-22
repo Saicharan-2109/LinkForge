@@ -302,10 +302,13 @@
       <h2>LINK <em>ANALYTICS</em></h2>
       <div class="sub" id="analytics-sub">Loading your click data...</div>
     </div>
-    <div class="range-pills">
-      <button class="range-pill active" onclick="setRange(7, this)">7D</button>
-      <button class="range-pill" onclick="setRange(30, this)">30D</button>
-      <button class="range-pill" onclick="setRange(0, this)">ALL</button>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <button id="analytics-reset" class="btn-sm btn-reset hidden" onclick="resetAnalytics()">← All Links</button>
+      <div class="range-pills">
+        <button class="range-pill active" onclick="setRange(7, this)">7D</button>
+        <button class="range-pill" onclick="setRange(30, this)">30D</button>
+        <button class="range-pill" onclick="setRange(0, this)">ALL</button>
+      </div>
     </div>
   </div>
 
